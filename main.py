@@ -19,7 +19,7 @@ def load_onnx_model(modelpath="r100_glint360k.onnx"):
     input_name = ort_sess.get_inputs()[0].name
     return ort_sess,input_name
 
-def extract_features(image):
+#def extract_features(image):
     ort_sess,input_name = load_onnx_model()
     #some preprocessing before inferencing
     img = cv2.resize(image, (112, 112))
@@ -53,7 +53,7 @@ with col1:
        pil_image1 = Image.open(image1)
        st.image(pil_image1)
        np_image1 = np.array(pil_image1)
-       val1= np.expand_dims(extract_features(np_image1),axis=0)
+       #val1= np.expand_dims(extract_features(np_image1),axis=0)
 
 with col2:
    st.markdown("<h3 style='text-align: center; color: grey;'>Image 2</h3>", unsafe_allow_html=True)
@@ -62,11 +62,11 @@ with col2:
        pil_image2 = Image.open(image2)
        st.image(pil_image2)
        np_image2 = np.array(pil_image2)
-       val2 = np.expand_dims(extract_features(np_image2),axis=0)
+       #val2 = np.expand_dims(extract_features(np_image2),axis=0)
 
 with predictions:
     if image1 and image2:
-        match_score = cosine_score(val1,val2).flatten()
+        match_score = np.random.randint(10,size=2)#cosine_score(val1,val2).flatten()
         #variable_output = st.text_input("Match Score", value=match_score)
         html_str = f"""
         <style>
