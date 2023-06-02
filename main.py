@@ -1,39 +1,32 @@
 import streamlit as st
-import numpy as np
-from PIL import Image
-import cv2
-import numpy as np
-import torch
-import onnxruntime as ort
-from sklearn.metrics.pairwise import cosine_similarity
+import skimage_blur_effect
+import skimage.io
+import skimage.measure
+from skimage import color,measure
+import skimage_blur_effect
+import numpy
+import argparse
 
-@st.cache
-def load_onnx_model(modelpath="r100_glint360k.onnx"):
-    # Run the model on the backend
-    # session = ort.InferenceSession(onnx_model_path)
-    if torch.cuda.is_available():
-        ort_sess = ort.InferenceSession(modelpath, None, providers=["CUDAExecutionProvider"])
-    else:
-        ort_sess = ort.InferenceSession(modelpath, None)
-        # get the name of the first input of the model
-    input_name = ort_sess.get_inputs()[0].name
-    return ort_sess,input_name
+# Note: make sure skimage_blur_effect.py is in same directory level
+# It overrides the original skimage_blur_effect
 
-#def extract_features(image):
-    ort_sess,input_name = load_onnx_model()
-    #some preprocessing before inferencing
-    img = cv2.resize(image, (112, 112))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = np.transpose(img, (2, 0, 1)) # passing image as channel,length,width
-    img = torch.from_numpy(img).unsqueeze(0).float()#unsqueeze(0) adds the batch size of 1 to array
-    img.div_(255).sub_(0.5).div_(0.5)
-    outputs_ort = ort_sess.run(None, {'{}'.format(input_name): img.numpy()})
-    feature = np.array(outputs_ort[0]).flatten()
-    return feature
+def estimate_blur_perceptual(image: numpy.array):
+    if image.ndim == 3:
+        image = color.rgb2gray(image)
+    return skimage_blur_effect.blur_effect(image, h_size=11)
 
-def cosine_score(feature1,feature2):
-    return cosine_similarity(feature1,feature2)
+def return_blur_estimate(imagepath):
+    loaded_skimage = skimage.io.imread(imagepath)
+    return estimate_blur_perceptual(loaded_skimage)
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Return the blur estimation for a single image")
+    parser.add_argument("--source", "-s", help="path to the image")
+    args = parser.parse_args()
+
+    estimated_blur_value = return_blur_estimate(args.source)
+
+    print(f"The estimated Blur Value of Image at {args.source} = {estimated_blur_value}"                                                                                  
 
 header = st.container()
 col1,col2 = st.columns(2)
