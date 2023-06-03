@@ -4,6 +4,7 @@ from PIL import Image
 import skimage.io
 from skimage import color
 import skimage
+from skimage.transform import resize
 
 
 ####################################################
@@ -107,6 +108,7 @@ def blur_effect(image, h_size=11, channel_axis=None, reduce_func=np.max):
 def estimate_blur_perceptual(image: numpy.array):
     if image.ndim == 3:
         image = color.rgb2gray(image)
+        image = resize(image, (224, 224), anti_aliasing=True)
     return blur_effect(image, h_size=11)
 
 
